@@ -1,0 +1,49 @@
+services:
+  web:
+    build: .
+    container_name: simple-business-web
+    restart: unless-stopped
+    ports:
+      - "${PORT:-14515}:14515"
+    volumes:
+      # data/ — JSON config, admin state, articles metadata
+      - ./data:/app/data
+      # img/ — uploaded images (user uploads survive container rebuilds)
+      - ./img:/app/img
+      # articles/ — generated article HTML files (rebuilt from template on each server start)
+      - ./articles:/app/articles
+    env_file:
+      - .env
+
+# ── First-time deployment ──────────────────────────────────────────
+#
+#  1. Clone the repository
+#     git clone https://github.com/your-username/Simple-Business-Websitebuilder.git
+#     cd Simple-Business-Websitebuilder
+#
+#  2. Create environment file
+#     cp .env.example .env
+#     nano .env          # set ADMIN_PASSWORD and SESSION_SECRET
+#
+#  3. Create persistent directories
+#     mkdir -p data img articles
+#
+#  4. Build and start
+#     docker compose up -d --build
+#
+#  5. Configure reverse proxy in 1Panel / aaPanel:
+#     Proxy target: http://127.0.0.1:14515
+#
+# ── Updating to a new version ─────────────────────────────────────
+#
+#  git pull && docker compose up -d --build
+#
+#  Your site content (data/site-data.json) is preserved automatically.
+#  The browser will always load fresh HTML/JS/CSS because the server
+#  sends Cache-Control: no-cache on all HTML responses.
+#
+# ── Port ──────────────────────────────────────────────────────────
+#
+#  Default host port: 14515
+#  Change in .env: PORT=your_port
+#  Then restart: docker compose up -d
